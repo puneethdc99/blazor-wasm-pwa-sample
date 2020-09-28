@@ -13,4 +13,5 @@ dotnet new -i Microsoft.AspNetCore.Components.WebAssembly.Templates::3.2.0-rc1.2
 For database creation :
 
 dotnet ef migrations add InitialCreate
+
 dotnet ef database update
