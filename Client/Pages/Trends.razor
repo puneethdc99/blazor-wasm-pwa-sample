@@ -1,0 +1,90 @@
+@page "/trends"
+@using TrendModelService.Shared
+@inject HttpClient Http
+
+<div class="row">
+    <br>
+    <div class="col-lg-6 col-md-6 col-sm-12">
+        <h3>Selected Trend</h3>
+        <br>
+        <input type="text" @bind-value="newTrend.AspectName" class="form-control mb-3" placeholder="Enter Trend Name" disabled/>
+        <input type="text" @bind-value="newTrend.TrendTrace" class="form-control mb-3" placeholder="Enter Trend Trace" disabled/>
+        <input type="text" @bind-value="newTrend.TrendTreatment" class="form-control mb-3" placeholder="Enter Trend Treatment" disabled/>
+        <button class="btn btn-block btn-primary">Register</button>
+    </div>
+    <div class="col-lg-6 col-md-6 col-sm-12">
+        <h3>List of Trends from NG Engineering Platform SQlite DB</h3>
+        <br>
+@if (trends == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table table-responsive">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>AspectName</th>
+                <th>TrendTrace</th>
+                <th>TrendTreatment</th>
+                <th>Select</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var trend in trends)
+            {
+                <tr>
+                    <td>@trend.Id</td>
+                    <td>@trend.AspectName</td>
+                    <td>@trend.TrendTrace</td>
+                    <td>@trend.TrendTreatment</td>
+                    <td>
+                        <button @onclick="@(()=>GetTrend(@trend.Id))" class="btn btn-sm btn-primary" >Select</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+</div>
+</div>
+@code {
+
+    private Trend[] trends;
+    private bool edit = false;
+    private Trend newTrend = new Trend();
+
+    protected override async Task OnInitializedAsync()
+    {
+        trends = await Http.GetFromJsonAsync<Trend[]>("api/trend");
+    }
+    private async Task SubmitTrend()
+    {
+        if (edit == false)
+        {
+            await Http.PostAsJsonAsync<Trend>("api/trend", newTrend);
+            await OnInitializedAsync();
+            newTrend = new Trend();
+        }
+        else
+        {
+            await Http.PutAsJsonAsync<Trend>("api/trend/" + newTrend.Id, newTrend);
+            await OnInitializedAsync();
+            edit = false;
+            newTrend = new Trend();
+        }
+    }
+    private async Task DeleteTrend(int id)
+    {
+        await Http.DeleteAsync("api/trend/" + id.ToString());
+        await OnInitializedAsync();
+    }
+    private async Task GetTrend(int id)
+    {
+        newTrend = await Http.GetFromJsonAsync<Trend>("api/trend/" + id.ToString());
+        edit = true;
+
+    }
+
+}
